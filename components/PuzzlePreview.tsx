@@ -97,8 +97,10 @@ export function PuzzlePreview({
     const calculateTextPosition = () => {
         const lines = baseText.split("\n")
         const lineHeight = baseFontSize * 1.2
-        const totalHeight = lines.length * lineHeight
-        const startY = ((gridHeight + basePadding * 2) * cellSize) / 2 - totalHeight / 2 + lineHeight / 2
+        const totalTextHeight = (lines.length - 1) * lineHeight + baseFontSize
+        // La base en el preview está desplazada por el padding, por lo que su centro real es:
+        const baseCenterY = -basePadding * cellSize + baseHeight / 2
+        const startY = baseCenterY - totalTextHeight / 2 + baseFontSize * 0.8 + baseTextOffsetY
 
         let textX: number
         let textAnchor: "start" | "middle" | "end"
@@ -119,21 +121,20 @@ export function PuzzlePreview({
                 break
         }
 
-        return { lines, lineHeight, startY, textX, textAnchor }
+        return { lines, lineHeight, startY, textX, textAnchor, totalTextHeight }
     }
 
     const renderBaseText = () => {
         if (!baseText || previewMode !== "dedication") return null
 
-        const { lines, lineHeight, startY, textX, textAnchor } = calculateTextPosition()
+        const { lines, lineHeight, startY, textX, textAnchor, totalTextHeight } = calculateTextPosition()
 
         return (
             <text
                 x={textX}
-                y={startY + baseTextOffsetY}
+                y={startY}
                 fontSize={baseFontSize}
                 textAnchor={textAnchor}
-                dominantBaseline="central"
                 fill="#000"
                 fontFamily={baseFontFamily}
                 fontWeight="bold"
@@ -179,8 +180,8 @@ export function PuzzlePreview({
         const backgroundColor = showColors
             ? piece.color
             : document.documentElement.classList.contains("dark")
-              ? "#5252524d"
-              : "#e8e8e84d"
+                ? "#5252524d"
+                : "#e8e8e84d"
 
         return (
             <>
