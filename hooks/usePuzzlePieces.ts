@@ -44,9 +44,13 @@ export function usePuzzlePieces(params: UsePuzzlePiecesParams): Piece[] {
                         }
                     } else if (params.textDistribution === "random") {
                         // Use deterministic pseudo-random based on piece index
-                        const random = ((params.seed + index) % 100) / 100
-                        if (random > 0.5) {
-                            const randomIndex = Math.floor((((params.seed + index * 7) % 100) / 100) * units.length)
+                        // Simple but effective hash-based random
+                        const hash = (params.seed * 9301 + index * 49297) % 233280
+                        const random = hash / 233280
+
+                        // 70% chance of having text for better coverage
+                        if (random < 0.7) {
+                            const randomIndex = Math.floor((hash * 7919) % units.length)
                             text = units[randomIndex]
                         }
                     }
@@ -64,11 +68,13 @@ export function usePuzzlePieces(params: UsePuzzlePiecesParams): Piece[] {
                     }
                 } else if (params.textureDistribution === "random") {
                     // Use deterministic pseudo-random based on piece index
-                    const random = ((params.seed + index * 13) % 100) / 100
-                    if (random > 0.5) {
-                        const randomIndex = Math.floor(
-                            (((params.seed + index * 17) % 100) / 100) * params.selectedTextures.length,
-                        )
+                    // Simple but effective hash-based random
+                    const hash = (params.seed * 9301 + index * 49297 + 13579) % 233280
+                    const random = hash / 233280
+
+                    // 70% chance of having texture for better coverage
+                    if (random < 0.7) {
+                        const randomIndex = Math.floor((hash * 7919) % params.selectedTextures.length)
                         texture = params.selectedTextures[randomIndex]
                     }
                 }
