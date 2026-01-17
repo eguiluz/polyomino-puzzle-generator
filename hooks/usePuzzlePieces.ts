@@ -15,6 +15,7 @@ export function usePuzzlePieces(params: UsePuzzlePiecesParams): Piece[] {
             params.snakiness,
             params.complexity,
             params.baseShape,
+            params.colorPalette,
         )
     }, [
         params.gridWidth,
@@ -26,6 +27,7 @@ export function usePuzzlePieces(params: UsePuzzlePiecesParams): Piece[] {
         params.snakiness,
         params.complexity,
         params.baseShape,
+        params.colorPalette,
     ])
 
     const pieces = useMemo(() => {

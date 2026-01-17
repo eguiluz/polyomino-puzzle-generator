@@ -21,6 +21,7 @@ export function usePolyominoState() {
     const [maxPieceSize, setMaxPieceSize] = useState(8)
     const [seed, setSeed] = useState(() => Date.now())
     const [baseShape, setBaseShape] = useState<BaseShape>("rectangle")
+    const [colorPalette, setColorPalette] = useState("wood")
 
     // Forma de las piezas
     const [intricateMode, setIntricateMode] = useState(false)
@@ -91,6 +92,8 @@ export function usePolyominoState() {
         setSeed,
         baseShape,
         setBaseShape,
+        colorPalette,
+        setColorPalette,
 
         // Forma de las piezas
         intricateMode,

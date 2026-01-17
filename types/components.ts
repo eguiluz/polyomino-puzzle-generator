@@ -65,6 +65,7 @@ export interface UsePuzzlePiecesParams {
     snakiness: number
     complexity: number
     baseShape: BaseShape
+    colorPalette: string
     includeText: boolean
     customText: string
     textDistribution: "all" | "alternate" | "random"
