@@ -21,10 +21,7 @@
             "purpose": "any maskable"
         }
     ],
-    "categories": [
-        "utilities",
-        "productivity"
-    ],
+    "categories": ["utilities", "productivity"],
     "screenshots": [],
     "share_target": {
         "action": "/",

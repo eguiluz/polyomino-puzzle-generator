@@ -383,27 +383,27 @@ export function generateSVG(
     Z`
 
     // Base - diferentes formas según la selección
-    // La posición X debe considerar el ancho total del puzzle+frame (baseWidth) más el margen
     const baseX = baseWidth + margin
+    const baseY = 0 // La base empieza en Y=0
     let basePath = ""
 
     switch (baseShape) {
         case "rectangle":
-            basePath = `M ${baseX + cornerRadius} 0
-        L ${baseX + baseWidth - cornerRadius} 0
-        A ${cornerRadius} ${cornerRadius} 0 0 1 ${baseX + baseWidth} ${cornerRadius}
-        L ${baseX + baseWidth} ${baseHeight - cornerRadius}
-        A ${cornerRadius} ${cornerRadius} 0 0 1 ${baseX + baseWidth - cornerRadius} ${baseHeight}
-        L ${baseX + cornerRadius} ${baseHeight}
-        A ${cornerRadius} ${cornerRadius} 0 0 1 ${baseX} ${baseHeight - cornerRadius}
-        L ${baseX} ${cornerRadius}
-        A ${cornerRadius} ${cornerRadius} 0 0 1 ${baseX + cornerRadius} 0
+            basePath = `M ${baseX + cornerRadius} ${baseY}
+        L ${baseX + baseWidth - cornerRadius} ${baseY}
+        A ${cornerRadius} ${cornerRadius} 0 0 1 ${baseX + baseWidth} ${baseY + cornerRadius}
+        L ${baseX + baseWidth} ${baseY + baseHeight - cornerRadius}
+        A ${cornerRadius} ${cornerRadius} 0 0 1 ${baseX + baseWidth - cornerRadius} ${baseY + baseHeight}
+        L ${baseX + cornerRadius} ${baseY + baseHeight}
+        A ${cornerRadius} ${cornerRadius} 0 0 1 ${baseX} ${baseY + baseHeight - cornerRadius}
+        L ${baseX} ${baseY + cornerRadius}
+        A ${cornerRadius} ${cornerRadius} 0 0 1 ${baseX + cornerRadius} ${baseY}
         Z`
             break
 
         case "hexagon": {
             const centerX = baseX + baseWidth / 2
-            const centerY = baseHeight / 2
+            const centerY = baseY + baseHeight / 2
             const radius = Math.min(baseWidth, baseHeight) / 2
             const hexPoints: { x: number; y: number }[] = []
 
@@ -426,7 +426,7 @@ export function generateSVG(
 
         case "circle": {
             const centerX = baseX + baseWidth / 2
-            const centerY = baseHeight / 2
+            const centerY = baseY + baseHeight / 2
             const radius = Math.min(baseWidth, baseHeight) / 2
             basePath = `M ${centerX + radius} ${centerY}
         A ${radius} ${radius} 0 0 1 ${centerX - radius} ${centerY}
@@ -448,13 +448,13 @@ export function generateSVG(
         let textAnchor: "start" | "middle" | "end"
 
         if (baseTextAlign === "left") {
-            baseTextX = baseX + baseTextOffsetX
+            baseTextX = baseX + baseTextOffsetX + margin
             textAnchor = "start"
         } else if (baseTextAlign === "right") {
-            baseTextX = baseX + baseWidth + baseTextOffsetX
+            baseTextX = baseX + baseWidth + baseTextOffsetX + margin
             textAnchor = "end"
         } else {
-            baseTextX = baseX + baseWidth / 2 + baseTextOffsetX
+            baseTextX = baseX + baseWidth / 2 + baseTextOffsetX + margin
             textAnchor = "middle"
         }
 
@@ -488,7 +488,7 @@ export function generateSVG(
         const lineHeight = baseFontSize * 1.2
         const totalTextHeight = (lines.length - 1) * lineHeight + baseFontSize
         // Calcular Y para el elemento text: centro vertical del bloque de texto
-        const textY = baseHeight / 2 - totalTextHeight / 2 + baseFontSize * 0.8 + baseTextOffsetY
+        const textY = baseY + baseHeight / 2 - totalTextHeight / 2 + baseFontSize * 0.8 + baseTextOffsetY
 
         // Crear tspan para cada línea
         const tspanElements = lines

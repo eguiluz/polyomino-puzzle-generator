@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const sharp = require('sharp');
+const fs = require("fs")
+const path = require("path")
+const sharp = require("sharp")
 
 const svg = `
 <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
@@ -12,18 +12,16 @@ const svg = `
               stroke-width="1"/>
     </g>
 </svg>
-`.trim();
+`.trim()
 
 sharp(Buffer.from(svg))
     .resize(32, 32)
     .png()
-    .toFile(path.join(__dirname, '../public/favicon.png'))
+    .toFile(path.join(__dirname, "../public/favicon.png"))
     .then(() => {
-        console.log('✓ Favicon PNG creado');
+        console.log("✓ Favicon PNG creado")
         // También crear un ICO
-        return sharp(Buffer.from(svg))
-            .resize(32, 32)
-            .toFile(path.join(__dirname, '../public/favicon.ico'));
+        return sharp(Buffer.from(svg)).resize(32, 32).toFile(path.join(__dirname, "../public/favicon.ico"))
     })
-    .then(() => console.log('✓ Favicon ICO creado'))
-    .catch(err => console.error('Error:', err));
+    .then(() => console.log("✓ Favicon ICO creado"))
+    .catch((err) => console.error("Error:", err))
