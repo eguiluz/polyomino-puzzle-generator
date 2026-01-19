@@ -222,9 +222,18 @@ function CustomizationSection({
         </div>
         <Switch id="include-text" checked={state.includeText} onCheckedChange={state.setIncludeText} />
       </div>
-
       {state.includeText && (
         <>
+          <div className="rounded-md bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 p-3">
+            <p className="text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2">
+              <HelpCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span>
+                <strong>Nota:</strong> El texto se exporta como elementos {'<text>'} en SVG. Si tu máquina
+                láser no los acepta, abre el SVG en Inkscape (Trayecto → Objeto a trayecto) o Illustrator
+                (Texto → Crear contornos) para convertirlos a paths.
+              </span>
+            </p>
+          </div>
           <div className="space-y-2">
             <Label htmlFor="custom-text">Texto personalizado</Label>
             <Textarea
@@ -634,6 +643,18 @@ function BaseCustomizationSection({ state }: { state: ReturnType<typeof usePolyo
           onChange={(e) => state.setBaseText(e.target.value)}
           className="min-h-15 resize-none"
         />
+        {state.baseText && (
+          <div className="rounded-md bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 p-3">
+            <p className="text-xs text-amber-800 dark:text-amber-200 flex items-start gap-2">
+              <HelpCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <span>
+                <strong>Nota:</strong> El texto se exporta como {'<text>'} SVG. Si tu máquina láser no lo
+                acepta, conviértelo a paths en Inkscape (Trayecto → Objeto a trayecto) o Illustrator
+                (Texto → Crear contornos).
+              </span>
+            </p>
+          </div>
+        )}
       </div>
       <div className="space-y-2">
         <Label>Tipo de letra</Label>
