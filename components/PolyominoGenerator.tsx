@@ -200,9 +200,11 @@ function PieceShapeSection({ state }: { state: ReturnType<typeof usePolyominoSta
 function CustomizationSection({
   state,
   addEmoji,
+  onRegenerateText,
 }: {
   state: ReturnType<typeof usePolyominoState>
   addEmoji: (emoji: string) => void
+  onRegenerateText: () => void
 }) {
   return (
     <CollapsibleCard
@@ -306,7 +308,21 @@ function CustomizationSection({
           </div>
 
           <div className="space-y-2">
-            <Label>Distribucion</Label>
+            <div className="flex items-center justify-between">
+              <Label>Distribucion</Label>
+              {state.textDistribution === "random" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRegenerateText}
+                  className="h-7 px-2 text-xs gap-1"
+                  title="Regenerar distribucion aleatoria"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Redistribuir
+                </Button>
+              )}
+            </div>
             <div className="grid grid-cols-3 gap-2">
               <Button
                 variant={state.textDistribution === "all" ? "default" : "outline"}
@@ -348,9 +364,11 @@ function CustomizationSection({
 function TexturesSection({
   state,
   toggleTexture,
+  onRegenerateTextures,
 }: {
   state: ReturnType<typeof usePolyominoState>
   toggleTexture: (texture: any) => void
+  onRegenerateTextures: () => void
 }) {
   return (
     <CollapsibleCard title="Texturas" open={state.showTextures} onOpenChange={state.setShowTextures}>
@@ -477,7 +495,21 @@ function TexturesSection({
             />
           </div>
           <div className="space-y-2">
-            <Label>Distribución</Label>
+            <div className="flex items-center justify-between">
+              <Label>Distribucion</Label>
+              {state.textureDistribution === "random" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRegenerateTextures}
+                  className="h-7 px-2 text-xs gap-1"
+                  title="Regenerar distribucion aleatoria de texturas"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  Redistribuir
+                </Button>
+              )}
+            </div>
             <div className="grid grid-cols-3 gap-2">
               <Button
                 variant={state.textureDistribution === "all" ? "default" : "outline"}
@@ -506,8 +538,8 @@ function TexturesSection({
             </div>
             <p className="text-xs text-muted-foreground">
               {state.textureDistribution === "all" && "Textura en todas las piezas"}
-              {state.textureDistribution === "alternate" && "Una pieza sí, una no"}
-              {state.textureDistribution === "random" && "Distribución aleatoria"}
+              {state.textureDistribution === "alternate" && "Una pieza si, una no"}
+              {state.textureDistribution === "random" && "Distribucion aleatoria"}
             </p>
           </div>
         </>
@@ -1005,10 +1037,20 @@ export function PolyominoPuzzleGenerator() {
     includeText: state.includeText,
     customText: state.customText,
     textDistribution: state.textDistribution,
+    textSeed: state.textSeed,
     includeTextures: state.includeTextures,
     selectedTextures: state.selectedTextures,
     textureDistribution: state.textureDistribution,
+    textureSeed: state.textureSeed,
   })
+
+  const regenerateTextDistribution = useCallback(() => {
+    state.setTextSeed(Date.now())
+  }, [state])
+
+  const regenerateTextureDistribution = useCallback(() => {
+    state.setTextureSeed(Date.now())
+  }, [state])
 
   const regenerate = useCallback(() => {
     state.setSeed(Date.now())
@@ -1095,8 +1137,8 @@ export function PolyominoPuzzleGenerator() {
           <PuzzleParamsSection state={state} />
           <PieceSizeSection state={state} />
           <PieceShapeSection state={state} />
-          <CustomizationSection state={state} addEmoji={addEmoji} />
-          <TexturesSection state={state} toggleTexture={toggleTexture} />
+          <CustomizationSection state={state} addEmoji={addEmoji} onRegenerateText={regenerateTextDistribution} />
+          <TexturesSection state={state} toggleTexture={toggleTexture} onRegenerateTextures={regenerateTextureDistribution} />
           <LaserParamsSection state={state} />
           <LaserColorsSection state={state} />
           <BaseCustomizationSection state={state} />

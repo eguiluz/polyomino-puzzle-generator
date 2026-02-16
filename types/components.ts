@@ -69,7 +69,9 @@ export interface UsePuzzlePiecesParams {
     includeText: boolean
     customText: string
     textDistribution: "all" | "alternate" | "random"
+    textSeed: number
     includeTextures: boolean
     selectedTextures: string[]
     textureDistribution: "all" | "alternate" | "random"
+    textureSeed: number
 }
