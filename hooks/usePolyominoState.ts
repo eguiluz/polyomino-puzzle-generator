@@ -33,6 +33,7 @@ export function usePolyominoState() {
     const [customText, setCustomText] = useState("")
     const [textDistribution, setTextDistribution] = useState<"all" | "alternate" | "random">("random")
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+    const [textSeed, setTextSeed] = useState(() => Date.now())
 
     // Texturas
     const [includeTextures, setIncludeTextures] = useState(false)
@@ -40,6 +41,7 @@ export function usePolyominoState() {
     const [textureSpacing, setTextureSpacing] = useState(2)
     const [textureRotation, setTextureRotation] = useState(0)
     const [textureDistribution, setTextureDistribution] = useState<"all" | "alternate" | "random">("random")
+    const [textureSeed, setTextureSeed] = useState(() => Date.now())
 
     // Parámetros de corte láser
     const [cellSize, setCellSize] = useState(10)
@@ -112,6 +114,8 @@ export function usePolyominoState() {
         setTextDistribution,
         selectedCategory,
         setSelectedCategory,
+        textSeed,
+        setTextSeed,
 
         // Texturas
         includeTextures,
@@ -124,6 +128,8 @@ export function usePolyominoState() {
         setTextureRotation,
         textureDistribution,
         setTextureDistribution,
+        textureSeed,
+        setTextureSeed,
 
         // Parámetros de corte láser
         cellSize,

@@ -3,6 +3,17 @@ import { generatePuzzle, type Piece, type BaseShape } from "@/lib/polyomino"
 import { parseTextIntoUnits } from "@/lib/textParser"
 import { UsePuzzlePiecesParams } from "@/types/components"
 
+// Better hash function for deterministic pseudo-random distribution
+function mulberry32(seed: number): () => number {
+    let s = seed | 0
+    return () => {
+        s = (s + 0x6d2b79f5) | 0
+        let t = Math.imul(s ^ (s >>> 15), 1 | s)
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+}
+
 export function usePuzzlePieces(params: UsePuzzlePiecesParams): Piece[] {
     const basePieces = useMemo(() => {
         return generatePuzzle(
@@ -45,14 +56,13 @@ export function usePuzzlePieces(params: UsePuzzlePiecesParams): Piece[] {
                             text = units[unitIndex]
                         }
                     } else if (params.textDistribution === "random") {
-                        // Use deterministic pseudo-random based on piece index
-                        // Simple but effective hash-based random
-                        const hash = (params.seed * 9301 + index * 49297) % 233280
-                        const random = hash / 233280
+                        // Use deterministic pseudo-random with good distribution
+                        const rng = mulberry32(params.textSeed * 49297 + index * 9301 + 1)
+                        const random = rng()
 
                         // 70% chance of having text for better coverage
                         if (random < 0.7) {
-                            const randomIndex = Math.floor((hash * 7919) % units.length)
+                            const randomIndex = Math.floor(rng() * units.length)
                             text = units[randomIndex]
                         }
                     }
@@ -69,14 +79,13 @@ export function usePuzzlePieces(params: UsePuzzlePiecesParams): Piece[] {
                         texture = params.selectedTextures[textureIndex]
                     }
                 } else if (params.textureDistribution === "random") {
-                    // Use deterministic pseudo-random based on piece index
-                    // Simple but effective hash-based random
-                    const hash = (params.seed * 9301 + index * 49297 + 13579) % 233280
-                    const random = hash / 233280
+                    // Use deterministic pseudo-random with good distribution
+                    const rng = mulberry32(params.textureSeed * 49297 + index * 9301 + 13579)
+                    const random = rng()
 
                     // 70% chance of having texture for better coverage
                     if (random < 0.7) {
-                        const randomIndex = Math.floor((hash * 7919) % params.selectedTextures.length)
+                        const randomIndex = Math.floor(rng() * params.selectedTextures.length)
                         texture = params.selectedTextures[randomIndex]
                     }
                 }
@@ -91,10 +100,11 @@ export function usePuzzlePieces(params: UsePuzzlePiecesParams): Piece[] {
         params.customText,
         params.textDistribution,
         params.includeText,
+        params.textSeed,
         params.includeTextures,
         params.selectedTextures,
         params.textureDistribution,
-        params.seed,
+        params.textureSeed,
     ])
 
     return pieces
