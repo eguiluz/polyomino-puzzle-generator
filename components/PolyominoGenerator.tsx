@@ -542,10 +542,10 @@ function LaserParamsSection({ state }: { state: ReturnType<typeof usePolyominoSt
       <div className="space-y-2">
         <Label>Grosor de linea: {state.strokeWidth}mm</Label>
         <Slider
-          value={[state.strokeWidth * 100]}
-          onValueChange={([v]) => state.setStrokeWidth(v / 100)}
+          value={[state.strokeWidth * 1000]}
+          onValueChange={([v]) => state.setStrokeWidth(v / 1000)}
           min={5}
-          max={50}
+          max={500}
           step={5}
         />
       </div>
