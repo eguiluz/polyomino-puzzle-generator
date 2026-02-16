@@ -333,23 +333,29 @@ export function generateSVG(
         // Generar clip path y textura si la pieza tiene textura
         if (piece.texture && piece.texture !== "none") {
             const clipPathId = `clip-piece-${piece.id}`
-            clipPaths += `    <clipPath id="${clipPathId}">\n      <path d="${d}" />\n    </clipPath>\n`
+            // Generar path de la pieza con offset aplicado directamente a las coordenadas
+            // para máxima compatibilidad con CorelDRAW (sin usar transforms)
+            const offsetCells = basePadding > 0
+                ? piece.cells.map(c => ({ x: c.x + basePadding, y: c.y + basePadding }))
+                : piece.cells
+            const clipD = generatePiecePath(offsetCells, cellSize, cornerRadius)
+            clipPaths += `    <clipPath id="${clipPathId}">\n      <path d="${clipD}" />\n    </clipPath>\n`
 
-            const texturePattern = generateTexture(piece.cells, cellSize, piece.texture, textureSpacing)
+            const texturePattern = basePadding > 0
+                ? generateTexture(offsetCells, cellSize, piece.texture, textureSpacing)
+                : generateTexture(piece.cells, cellSize, piece.texture, textureSpacing)
             if (texturePattern) {
-                // Calcular el centro de la pieza para aplicar rotación
-                const minX = Math.min(...piece.cells.map((c) => c.x))
-                const maxX = Math.max(...piece.cells.map((c) => c.x))
-                const minY = Math.min(...piece.cells.map((c) => c.y))
-                const maxY = Math.max(...piece.cells.map((c) => c.y))
+                // Calcular el centro de la pieza en coordenadas absolutas (con offset)
+                const minX = Math.min(...offsetCells.map((c) => c.x))
+                const maxX = Math.max(...offsetCells.map((c) => c.x))
+                const minY = Math.min(...offsetCells.map((c) => c.y))
+                const maxY = Math.max(...offsetCells.map((c) => c.y))
                 const centerX = ((minX + maxX) / 2 + 0.5) * cellSize
                 const centerY = ((minY + maxY) / 2 + 0.5) * cellSize
 
-                let groupTransform = ""
-                if (basePadding > 0) {
-                    groupTransform = `transform="translate(${paddingSize}, ${paddingSize})" `
-                }
-                textures += `  <g ${groupTransform}clip-path="url(#${clipPathId})">
+                // Sin transforms en el grupo ni en el clipPath: todo en coordenadas absolutas
+                // Solo rotate en el path de textura, usando el centro ya en coordenadas absolutas
+                textures += `  <g clip-path="url(#${clipPathId})">
     <path d="${texturePattern}" stroke="${engraveColor}" stroke-width="${strokeWidth * 0.5}" fill="none" transform="rotate(${textureRotation}, ${centerX}, ${centerY})" />
   </g>\n`
             }
