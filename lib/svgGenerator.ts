@@ -333,7 +333,9 @@ export function generateSVG(
         // Generar clip path y textura si la pieza tiene textura
         if (piece.texture && piece.texture !== "none") {
             const clipPathId = `clip-piece-${piece.id}`
-            clipPaths += `    <clipPath id="${clipPathId}">\n      <path d="${d}" />\n    </clipPath>\n`
+            // Aplicar translate en el path del clipPath para compatibilidad con CorelDRAW
+            const clipTransform = basePadding > 0 ? ` transform="translate(${paddingSize}, ${paddingSize})"` : ""
+            clipPaths += `    <clipPath id="${clipPathId}">\n      <path d="${d}"${clipTransform} />\n    </clipPath>\n`
 
             const texturePattern = generateTexture(piece.cells, cellSize, piece.texture, textureSpacing)
             if (texturePattern) {
@@ -345,12 +347,13 @@ export function generateSVG(
                 const centerX = ((minX + maxX) / 2 + 0.5) * cellSize
                 const centerY = ((minY + maxY) / 2 + 0.5) * cellSize
 
-                let groupTransform = ""
-                if (basePadding > 0) {
-                    groupTransform = `transform="translate(${paddingSize}, ${paddingSize})" `
-                }
-                textures += `  <g ${groupTransform}clip-path="url(#${clipPathId})">
-    <path d="${texturePattern}" stroke="${engraveColor}" stroke-width="${strokeWidth * 0.5}" fill="none" transform="rotate(${textureRotation}, ${centerX}, ${centerY})" />
+                // Incorporar translate junto con rotate en el path de la textura (sin transform en el grupo)
+                // para que clipPath y contenido estén en el mismo sistema de coordenadas absoluto
+                const textureTransform = basePadding > 0
+                    ? `translate(${paddingSize}, ${paddingSize}) rotate(${textureRotation}, ${centerX}, ${centerY})`
+                    : `rotate(${textureRotation}, ${centerX}, ${centerY})`
+                textures += `  <g clip-path="url(#${clipPathId})">
+    <path d="${texturePattern}" stroke="${engraveColor}" stroke-width="${strokeWidth * 0.5}" fill="none" transform="${textureTransform}" />
   </g>\n`
             }
         }
