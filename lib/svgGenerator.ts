@@ -247,7 +247,6 @@ export function generateSVG(
 
     let paths = ""
     let texts = ""
-    let clipPaths = ""
     let textures = ""
 
     // Generar el marco/borde (diferencia entre base y puzzle) si hay padding
@@ -330,34 +329,16 @@ export function generateSVG(
         const fill = showColors ? piece.color : "none"
         paths += `  <path ${puzzleOffset}d="${d}" fill="${fill}" stroke="${cutColor}" stroke-width="${strokeWidth}" />\n`
 
-        // Generar clip path y textura si la pieza tiene textura
+        // Generar textura clipped geométricamente (sin clipPath)
         if (piece.texture && piece.texture !== "none") {
-            const clipPathId = `clip-piece-${piece.id}`
-            // Generar path de la pieza con offset aplicado directamente a las coordenadas
-            // para máxima compatibilidad con CorelDRAW (sin usar transforms)
             const offsetCells = basePadding > 0
                 ? piece.cells.map(c => ({ x: c.x + basePadding, y: c.y + basePadding }))
                 : piece.cells
-            const clipD = generatePiecePath(offsetCells, cellSize, cornerRadius)
-            clipPaths += `    <clipPath id="${clipPathId}">\n      <path d="${clipD}" />\n    </clipPath>\n`
 
-            const texturePattern = basePadding > 0
-                ? generateTexture(offsetCells, cellSize, piece.texture, textureSpacing)
-                : generateTexture(piece.cells, cellSize, piece.texture, textureSpacing)
+            const texturePattern = generateTexture(offsetCells, cellSize, piece.texture, textureSpacing, textureRotation)
             if (texturePattern) {
-                // Calcular el centro de la pieza en coordenadas absolutas (con offset)
-                const minX = Math.min(...offsetCells.map((c) => c.x))
-                const maxX = Math.max(...offsetCells.map((c) => c.x))
-                const minY = Math.min(...offsetCells.map((c) => c.y))
-                const maxY = Math.max(...offsetCells.map((c) => c.y))
-                const centerX = ((minX + maxX) / 2 + 0.5) * cellSize
-                const centerY = ((minY + maxY) / 2 + 0.5) * cellSize
-
-                // Sin transforms en el grupo ni en el clipPath: todo en coordenadas absolutas
-                // Solo rotate en el path de textura, usando el centro ya en coordenadas absolutas
-                textures += `  <g clip-path="url(#${clipPathId})">
-    <path d="${texturePattern}" stroke="${engraveColor}" stroke-width="${strokeWidth * 0.5}" fill="none" transform="rotate(${textureRotation}, ${centerX}, ${centerY})" />
-  </g>\n`
+                // Path ya recortado geométricamente – no necesita clipPath ni transform
+                textures += `  <path d="${texturePattern}" stroke="${engraveColor}" stroke-width="${strokeWidth * 0.5}" fill="none" />\n`
             }
         }
 
@@ -516,8 +497,6 @@ export function generateSVG(
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}mm" height="${totalHeight}mm" viewBox="0 0 ${totalWidth} ${totalHeight}">
-  <defs>
-${clipPaths}  </defs>
   <!-- Texturas y textos -->
 ${textures}${texts}${baseTextElement}
   <!-- Líneas de corte: Puzzle con piezas y marco -->

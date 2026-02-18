@@ -151,23 +151,16 @@ export function PuzzlePreview({
     const renderPieceTexture = (piece: Piece) => {
         if (!piece.texture) return null
 
-        const minX = Math.min(...piece.cells.map((c) => c.x))
-        const maxX = Math.max(...piece.cells.map((c) => c.x))
-        const minY = Math.min(...piece.cells.map((c) => c.y))
-        const maxY = Math.max(...piece.cells.map((c) => c.y))
-        const centerX = ((minX + maxX) / 2 + 0.5) * cellSize
-        const centerY = ((minY + maxY) / 2 + 0.5) * cellSize
+        const texturePattern = generateTexture(piece.cells, cellSize, piece.texture, textureSpacing, textureRotation)
+        if (!texturePattern) return null
 
         return (
-            <g clipPath={`url(#preview-clip-${piece.id})`}>
-                <path
-                    d={generateTexture(piece.cells, cellSize, piece.texture, textureSpacing)}
-                    stroke="#333"
-                    strokeWidth={strokeWidth * 0.5}
-                    fill="none"
-                    transform={`rotate(${textureRotation}, ${centerX}, ${centerY})`}
-                />
-            </g>
+            <path
+                d={texturePattern}
+                stroke="#333"
+                strokeWidth={strokeWidth * 0.5}
+                fill="none"
+            />
         )
     }
 
@@ -214,13 +207,6 @@ export function PuzzlePreview({
 
         return (
             <>
-                <defs>
-                    {pieces.map((piece) => (
-                        <clipPath key={`clip-${piece.id}`} id={`preview-clip-${piece.id}`}>
-                            <path d={generatePiecePath(piece.cells, cellSize, cornerRadius)} />
-                        </clipPath>
-                    ))}
-                </defs>
                 {pieces.map((piece) => {
                     const textPos = getTextPosition(piece.cells, cellSize)
                     const fontSize = piece.text
