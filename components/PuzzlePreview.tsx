@@ -251,17 +251,17 @@ export function PuzzlePreview({
                     strokeWidth={strokeWidth}
                     strokeDasharray="2,2"
                 />
-                {/* Left notch - semicircle pointing left */}
+                {/* Left notch - semicircle pointing left (outward from puzzle) */}
                 <path
-                    d={`M ${leftX} ${midY - notchRadius} A ${notchRadius} ${notchRadius} 0 0 0 ${leftX} ${midY + notchRadius}`}
+                    d={`M ${leftX} ${midY - notchRadius} A ${notchRadius} ${notchRadius} 0 0 1 ${leftX} ${midY + notchRadius}`}
                     fill="none"
                     stroke="#666"
                     strokeWidth={strokeWidth}
                     strokeDasharray="2,2"
                 />
-                {/* Right notch - semicircle pointing right */}
+                {/* Right notch - semicircle pointing right (outward from puzzle) */}
                 <path
-                    d={`M ${rightX} ${midY - notchRadius} A ${notchRadius} ${notchRadius} 0 0 1 ${rightX} ${midY + notchRadius}`}
+                    d={`M ${rightX} ${midY - notchRadius} A ${notchRadius} ${notchRadius} 0 0 0 ${rightX} ${midY + notchRadius}`}
                     fill="none"
                     stroke="#666"
                     strokeWidth={strokeWidth}

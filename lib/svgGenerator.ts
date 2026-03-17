@@ -348,6 +348,7 @@ function generatePuzzleOutlinePathWithNotches(
         const isHorizontal = Math.abs(reversedSegment.dy) < 0.001
         const isVertical = Math.abs(reversedSegment.dx) < 0.001
         let hasNotch = false
+        let notchSweep = 0 // Will be set based on edge position and direction
 
         if (isHorizontal) {
             // Top edge (y = minY) or Bottom edge (y = maxY)
@@ -358,6 +359,9 @@ function generatePuzzleOutlinePathWithNotches(
             const segMaxX = Math.max(x1, x2)
             if ((isTopEdge || isBottomEdge) && segMinX < midX && segMaxX > midX) {
                 hasNotch = true
+                // For top edge: notch curves upward (outward), for bottom: curves downward
+                // In counter-clockwise path: top edge goes right-to-left, bottom goes left-to-right
+                notchSweep = isTopEdge ? 0 : 1
             }
         } else if (isVertical) {
             // Left edge (x = minX) or Right edge (x = maxX)
@@ -368,6 +372,9 @@ function generatePuzzleOutlinePathWithNotches(
             const segMaxY = Math.max(y1, y2)
             if ((isLeftEdge || isRightEdge) && segMinY < midY && segMaxY > midY) {
                 hasNotch = true
+                // For left edge: notch curves leftward (outward), for right: curves rightward
+                // In counter-clockwise path: left edge goes bottom-to-top, right goes top-to-bottom
+                notchSweep = isLeftEdge ? 1 : 0
             }
         }
 
@@ -391,13 +398,11 @@ function generatePuzzleOutlinePathWithNotches(
                 const notchEndX = segMidX + unitX * (notchRadius / cellSize)
                 const notchEndY = segMidY + unitY * (notchRadius / cellSize)
 
-                // Line to notch start (with corner offset)
-                const notchStartOffset = getCornerOffset(reversedSegment, cornerRadius, false)
+                // Line to notch start
                 path += `L ${notchStartX * cellSize} ${notchStartY * cellSize} `
 
                 // Arc for the notch (semicircle going outward into the frame)
-                // sweep=0 makes the arc curve outward for counter-clockwise path
-                path += `A ${notchRadius} ${notchRadius} 0 0 0 ${notchEndX * cellSize} ${notchEndY * cellSize} `
+                path += `A ${notchRadius} ${notchRadius} 0 0 ${notchSweep} ${notchEndX * cellSize} ${notchEndY * cellSize} `
 
                 // Continue to end of segment
                 const endOffset = getCornerOffset(reversedSegment, cornerRadius, false)
