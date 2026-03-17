@@ -50,6 +50,10 @@ export function usePolyominoState() {
     const [baseMargin, setBaseMargin] = useState(20)
     const [basePadding, setBasePadding] = useState(1)
 
+    // Muescas para sacar piezas
+    const [fingerNotches, setFingerNotches] = useState(true)
+    const [notchRadius, setNotchRadius] = useState(3)
+
     // Colores para láser
     const [showColors, setShowColors] = useState(false)
     const [cutColor, setCutColor] = useState("#FF0000")
@@ -142,6 +146,12 @@ export function usePolyominoState() {
         setBaseMargin,
         basePadding,
         setBasePadding,
+
+        // Muescas para sacar piezas
+        fingerNotches,
+        setFingerNotches,
+        notchRadius,
+        setNotchRadius,
 
         // Colores para láser
         showColors,

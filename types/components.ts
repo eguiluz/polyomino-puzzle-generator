@@ -50,6 +50,8 @@ export interface PuzzlePreviewProps {
     baseTextAlign: "left" | "center" | "right"
     baseTextOffsetX: number
     baseTextOffsetY: number
+    fingerNotches: boolean
+    notchRadius: number
 }
 
 /**

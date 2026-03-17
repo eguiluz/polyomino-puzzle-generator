@@ -608,6 +608,36 @@ function LaserParamsSection({ state }: { state: ReturnType<typeof usePolyominoSt
           step={1}
         />
       </div>
+      <div className="space-y-2 pt-2 border-t">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="finger-notches" className="text-sm">
+            Muescas para sacar piezas
+          </Label>
+          <Switch
+            id="finger-notches"
+            checked={state.fingerNotches}
+            onCheckedChange={state.setFingerNotches}
+            disabled={state.basePadding === 0}
+          />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Muescas semicirculares en el marco para poder sacar las piezas con el dedo
+        </p>
+        {state.fingerNotches && state.basePadding > 0 && (
+          <div className="space-y-2 pt-2">
+            <div className="flex justify-between">
+              <Label>Radio de muesca: {state.notchRadius}mm</Label>
+            </div>
+            <Slider
+              value={[state.notchRadius]}
+              onValueChange={([v]) => state.setNotchRadius(v)}
+              min={1}
+              max={10}
+              step={0.5}
+            />
+          </div>
+        )}
+      </div>
     </CollapsibleCard>
   )
 }
@@ -887,27 +917,29 @@ function PreviewCard({
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col overflow-hidden">
-        <PuzzlePreview
-          pieces={pieces}
-          gridWidth={state.gridWidth}
-          gridHeight={state.gridHeight}
-          cellSize={state.cellSize}
-          basePadding={state.basePadding}
-          baseShape={state.baseShape}
-          cornerRadius={state.cornerRadius}
-          strokeWidth={state.strokeWidth}
-          previewScale={previewScale}
-          showColors={state.showColors}
-          includeText={state.includeText}
-          textureRotation={state.textureRotation}
-          textureSpacing={state.textureSpacing}
-          previewMode={state.previewMode}
-          baseText={state.baseText}
-          baseFontSize={state.baseFontSize}
-          baseFontFamily={state.baseFontFamily}
-          baseTextAlign={state.baseTextAlign}
-          baseTextOffsetX={state.baseTextOffsetX}
-          baseTextOffsetY={state.baseTextOffsetY}
+<PuzzlePreview
+                pieces={pieces}
+                gridWidth={state.gridWidth}
+                gridHeight={state.gridHeight}
+                cellSize={state.cellSize}
+                basePadding={state.basePadding}
+                baseShape={state.baseShape}
+                cornerRadius={state.cornerRadius}
+                strokeWidth={state.strokeWidth}
+                previewScale={previewScale}
+                showColors={state.showColors}
+                includeText={state.includeText}
+                textureRotation={state.textureRotation}
+                textureSpacing={state.textureSpacing}
+                previewMode={state.previewMode}
+                baseText={state.baseText}
+                baseFontSize={state.baseFontSize}
+                baseFontFamily={state.baseFontFamily}
+                baseTextAlign={state.baseTextAlign}
+                baseTextOffsetX={state.baseTextOffsetX}
+                baseTextOffsetY={state.baseTextOffsetY}
+                fingerNotches={state.fingerNotches}
+                notchRadius={state.notchRadius}
         />
         <div className="mt-4 space-y-2">
           <div className="text-center text-sm text-muted-foreground">
@@ -1082,6 +1114,8 @@ export function PolyominoPuzzleGenerator() {
       state.baseTextAlign,
       getTextPosition,
       calculateFontSize,
+      state.fingerNotches,
+      state.notchRadius,
     )
 
     const filename = generatePuzzleFilename(state.gridWidth, state.gridHeight)
@@ -1108,6 +1142,8 @@ export function PolyominoPuzzleGenerator() {
     state.baseTextOffsetX,
     state.baseTextOffsetY,
     state.baseTextAlign,
+    state.fingerNotches,
+    state.notchRadius,
   ])
 
   const previewScale = (400 / Math.max(state.gridWidth, state.gridHeight) / state.cellSize) * (state.zoom / 100)
