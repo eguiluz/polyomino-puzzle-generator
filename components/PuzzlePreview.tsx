@@ -26,6 +26,8 @@ export function PuzzlePreview({
     baseTextAlign,
     baseTextOffsetX,
     baseTextOffsetY,
+    fingerNotches,
+    notchRadius,
 }: PuzzlePreviewProps) {
     const { baseWidth, baseHeight, baseCenterX, baseCenterY } = calculateBaseDimensions(
         gridWidth,
@@ -202,6 +204,73 @@ export function PuzzlePreview({
         )
     }
 
+    const renderFingerNotches = () => {
+        if (!fingerNotches || notchRadius <= 0 || basePadding <= 0) return null
+
+        // Get all cells from pieces
+        const allCells: { x: number; y: number }[] = []
+        for (const piece of pieces) {
+            allCells.push(...piece.cells)
+        }
+
+        if (allCells.length === 0) return null
+
+        // Find bounding box
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+        for (const cell of allCells) {
+            minX = Math.min(minX, cell.x)
+            maxX = Math.max(maxX, cell.x + 1)
+            minY = Math.min(minY, cell.y)
+            maxY = Math.max(maxY, cell.y + 1)
+        }
+
+        // Calculate notch positions (at midpoints of each edge)
+        const midX = ((minX + maxX) / 2) * cellSize
+        const midY = ((minY + maxY) / 2) * cellSize
+        const topY = minY * cellSize
+        const bottomY = maxY * cellSize
+        const leftX = minX * cellSize
+        const rightX = maxX * cellSize
+
+        // Render semicircular notches as arcs pointing outward (into the frame)
+        return (
+            <g className="finger-notches">
+                {/* Top notch - semicircle pointing up */}
+                <path
+                    d={`M ${midX - notchRadius} ${topY} A ${notchRadius} ${notchRadius} 0 0 0 ${midX + notchRadius} ${topY}`}
+                    fill="none"
+                    stroke="#666"
+                    strokeWidth={strokeWidth}
+                    strokeDasharray="2,2"
+                />
+                {/* Bottom notch - semicircle pointing down */}
+                <path
+                    d={`M ${midX - notchRadius} ${bottomY} A ${notchRadius} ${notchRadius} 0 0 1 ${midX + notchRadius} ${bottomY}`}
+                    fill="none"
+                    stroke="#666"
+                    strokeWidth={strokeWidth}
+                    strokeDasharray="2,2"
+                />
+                {/* Left notch - semicircle pointing left */}
+                <path
+                    d={`M ${leftX} ${midY - notchRadius} A ${notchRadius} ${notchRadius} 0 0 0 ${leftX} ${midY + notchRadius}`}
+                    fill="none"
+                    stroke="#666"
+                    strokeWidth={strokeWidth}
+                    strokeDasharray="2,2"
+                />
+                {/* Right notch - semicircle pointing right */}
+                <path
+                    d={`M ${rightX} ${midY - notchRadius} A ${notchRadius} ${notchRadius} 0 0 1 ${rightX} ${midY + notchRadius}`}
+                    fill="none"
+                    stroke="#666"
+                    strokeWidth={strokeWidth}
+                    strokeDasharray="2,2"
+                />
+            </g>
+        )
+    }
+
     const renderPieces = () => {
         if (previewMode !== "pieces") return null
 
@@ -242,6 +311,7 @@ export function PuzzlePreview({
                     }}
                 >
                     {renderBase()}
+                    {renderFingerNotches()}
                     {renderBaseText()}
                     {renderPieces()}
                 </svg>

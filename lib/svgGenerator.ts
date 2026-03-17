@@ -140,6 +140,88 @@ export function generatePiecePath(cells: { x: number; y: number }[], cellSize: n
     return path
 }
 
+// Generate semicircular notch path for a segment
+function generateNotchArc(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    notchRadius: number,
+    cellSize: number
+): string {
+    // Calculate midpoint of the segment
+    const midX = (x1 + x2) / 2
+    const midY = (y1 + y2) / 2
+
+    // Determine direction (for the arc)
+    const dx = x2 - x1
+    const dy = y2 - y1
+    const len = Math.sqrt(dx * dx + dy * dy)
+
+    if (len < notchRadius * 2) return "" // Segment too short for a notch
+
+    // Calculate the notch center position (at midpoint of edge)
+    // For the inner outline (counter-clockwise), the notch should go outward (into the frame)
+    const perpX = -dy / len // Perpendicular direction
+    const perpY = dx / len
+
+    // Notch start and end points on the original edge
+    const notchStartX = midX - (dx / len) * notchRadius
+    const notchStartY = midY - (dy / len) * notchRadius
+    const notchEndX = midX + (dx / len) * notchRadius
+    const notchEndY = midY + (dy / len) * notchRadius
+
+    // The arc goes outward (perpendicular to the edge, into the frame)
+    // sweep=0 for counter-clockwise arc that curves outward
+    return `L ${notchStartX * cellSize} ${notchStartY * cellSize} A ${notchRadius * cellSize} ${notchRadius * cellSize} 0 0 0 ${notchEndX * cellSize} ${notchEndY * cellSize} `
+}
+
+// Find horizontal and vertical edges suitable for notches
+function findNotchableEdges(cells: { x: number; y: number }[]): {
+    topEdges: { x: number; y: number }[]
+    bottomEdges: { x: number; y: number }[]
+    leftEdges: { x: number; y: number }[]
+    rightEdges: { x: number; y: number }[]
+} {
+    const cellSet = new Set(cells.map((c) => `${c.x},${c.y}`))
+
+    const topEdges: { x: number; y: number }[] = []
+    const bottomEdges: { x: number; y: number }[] = []
+    const leftEdges: { x: number; y: number }[] = []
+    const rightEdges: { x: number; y: number }[] = []
+
+    // Find bounding box
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+    for (const cell of cells) {
+        minX = Math.min(minX, cell.x)
+        maxX = Math.max(maxX, cell.x)
+        minY = Math.min(minY, cell.y)
+        maxY = Math.max(maxY, cell.y)
+    }
+
+    // Find edge cells on each side
+    for (const cell of cells) {
+        // Top edge: cell at minY that has no cell above
+        if (cell.y === minY && !cellSet.has(`${cell.x},${cell.y - 1}`)) {
+            topEdges.push(cell)
+        }
+        // Bottom edge: cell at maxY that has no cell below
+        if (cell.y === maxY && !cellSet.has(`${cell.x},${cell.y + 1}`)) {
+            bottomEdges.push(cell)
+        }
+        // Left edge: cell at minX that has no cell to the left
+        if (cell.x === minX && !cellSet.has(`${cell.x - 1},${cell.y}`)) {
+            leftEdges.push(cell)
+        }
+        // Right edge: cell at maxX that has no cell to the right
+        if (cell.x === maxX && !cellSet.has(`${cell.x + 1},${cell.y}`)) {
+            rightEdges.push(cell)
+        }
+    }
+
+    return { topEdges, bottomEdges, leftEdges, rightEdges }
+}
+
 // Generate outline path for the entire puzzle (all pieces combined)
 function generatePuzzleOutlinePath(cells: { x: number; y: number }[], cellSize: number, cornerRadius: number): string {
     if (cells.length === 0) return ""
@@ -209,6 +291,144 @@ function generatePuzzleOutlinePath(cells: { x: number; y: number }[], cellSize: 
     return path
 }
 
+// Generate outline path with finger notches for easy piece removal
+function generatePuzzleOutlinePathWithNotches(
+    cells: { x: number; y: number }[],
+    cellSize: number,
+    cornerRadius: number,
+    notchRadius: number
+): string {
+    if (cells.length === 0) return ""
+
+    const segments = getOutlineSegments(cells)
+    if (segments.length === 0) return ""
+
+    // Find bounding box to identify which edges are on the perimeter
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+    for (const cell of cells) {
+        minX = Math.min(minX, cell.x)
+        maxX = Math.max(maxX, cell.x + 1)
+        minY = Math.min(minY, cell.y)
+        maxY = Math.max(maxY, cell.y + 1)
+    }
+
+    // Find middle positions for notches on each side
+    const midX = (minX + maxX) / 2
+    const midY = (minY + maxY) / 2
+
+    // Build path with rounded corners (in counter-clockwise direction for hole)
+    let path = ""
+    const reversedSegments = [...segments].reverse()
+
+    for (let i = 0; i < reversedSegments.length; i++) {
+        const current = reversedSegments[i]
+        const next = reversedSegments[(i + 1) % reversedSegments.length]
+
+        const x1 = current.x2
+        const y1 = current.y2
+        const x2 = current.x1
+        const y2 = current.y1
+
+        const reversedSegment = {
+            ...current,
+            x1: current.x2,
+            y1: current.y2,
+            x2: current.x1,
+            y2: current.y1,
+            dx: -current.dx,
+            dy: -current.dy,
+        }
+
+        if (i === 0) {
+            const startOffset = getCornerOffset(reversedSegment, cornerRadius, true)
+            path += `M ${x1 * cellSize + startOffset.x} ${y1 * cellSize + startOffset.y} `
+        }
+
+        // Check if this segment should have a notch (on the outer perimeter, closest to center)
+        const isHorizontal = Math.abs(reversedSegment.dy) < 0.001
+        const isVertical = Math.abs(reversedSegment.dx) < 0.001
+        let hasNotch = false
+
+        if (isHorizontal) {
+            // Top edge (y = minY) or Bottom edge (y = maxY)
+            const isTopEdge = Math.abs(y1 - minY) < 0.001
+            const isBottomEdge = Math.abs(y1 - maxY) < 0.001
+            // Check if this segment crosses the middle X
+            const segMinX = Math.min(x1, x2)
+            const segMaxX = Math.max(x1, x2)
+            if ((isTopEdge || isBottomEdge) && segMinX < midX && segMaxX > midX) {
+                hasNotch = true
+            }
+        } else if (isVertical) {
+            // Left edge (x = minX) or Right edge (x = maxX)
+            const isLeftEdge = Math.abs(x1 - minX) < 0.001
+            const isRightEdge = Math.abs(x1 - maxX) < 0.001
+            // Check if this segment crosses the middle Y
+            const segMinY = Math.min(y1, y2)
+            const segMaxY = Math.max(y1, y2)
+            if ((isLeftEdge || isRightEdge) && segMinY < midY && segMaxY > midY) {
+                hasNotch = true
+            }
+        }
+
+        if (hasNotch && notchRadius > 0) {
+            // Calculate midpoint for the notch
+            const segMidX = (x1 + x2) / 2
+            const segMidY = (y1 + y2) / 2
+
+            // Direction along the segment
+            const dx = x2 - x1
+            const dy = y2 - y1
+            const len = Math.sqrt(dx * dx + dy * dy)
+
+            if (len >= notchRadius * 2 / cellSize) {
+                const unitX = dx / len
+                const unitY = dy / len
+
+                // Notch start and end points
+                const notchStartX = segMidX - unitX * (notchRadius / cellSize)
+                const notchStartY = segMidY - unitY * (notchRadius / cellSize)
+                const notchEndX = segMidX + unitX * (notchRadius / cellSize)
+                const notchEndY = segMidY + unitY * (notchRadius / cellSize)
+
+                // Line to notch start (with corner offset)
+                const notchStartOffset = getCornerOffset(reversedSegment, cornerRadius, false)
+                path += `L ${notchStartX * cellSize} ${notchStartY * cellSize} `
+
+                // Arc for the notch (semicircle going outward into the frame)
+                // sweep=0 makes the arc curve outward for counter-clockwise path
+                path += `A ${notchRadius} ${notchRadius} 0 0 0 ${notchEndX * cellSize} ${notchEndY * cellSize} `
+
+                // Continue to end of segment
+                const endOffset = getCornerOffset(reversedSegment, cornerRadius, false)
+                path += `L ${x2 * cellSize + endOffset.x} ${y2 * cellSize + endOffset.y} `
+            } else {
+                // Segment too short, just draw line
+                const endOffset = getCornerOffset(reversedSegment, cornerRadius, false)
+                path += `L ${x2 * cellSize + endOffset.x} ${y2 * cellSize + endOffset.y} `
+            }
+        } else {
+            // No notch, just draw line
+            const endOffset = getCornerOffset(reversedSegment, cornerRadius, false)
+            path += `L ${x2 * cellSize + endOffset.x} ${y2 * cellSize + endOffset.y} `
+        }
+
+        // Arc for corner
+        const reversedNext = { ...next, x1: next.x2, y1: next.y2, x2: next.x1, y2: next.y1, dx: -next.dx, dy: -next.dy }
+        const turnDirection = getTurnDirection(reversedSegment, reversedNext)
+        if (turnDirection !== 0) {
+            const nextStartOffset = getCornerOffset(reversedNext, cornerRadius, true)
+            const nextX1 = reversedNext.x1 * cellSize
+            const nextY1 = reversedNext.y1 * cellSize
+            const sweep = turnDirection > 0 ? 1 : 0
+            path += `A ${cornerRadius} ${cornerRadius} 0 0 ${sweep} ${nextX1 + nextStartOffset.x} ${nextY1 + nextStartOffset.y} `
+        }
+    }
+
+    path += "Z"
+    return path
+}
+
 // Generate complete SVG content for laser cutting
 export function generateSVG(
     pieces: Piece[],
@@ -238,6 +458,8 @@ export function generateSVG(
         cellSize: number,
     ) => { x: number; y: number; width: number; canUseDouble: boolean },
     calculateFontSize: (text: string, cellSize: number, availableWidth: number) => number,
+    fingerNotches = true,
+    notchRadius = 3,
 ): string {
     const svgWidth = width * cellSize
     const svgHeight = height * cellSize
@@ -317,7 +539,10 @@ export function generateSVG(
         }
 
         // Generar el path del contorno exterior del puzzle completo
-        const puzzleOutlinePath = generatePuzzleOutlinePath(allCells, cellSize, cornerRadius)
+        // Si fingerNotches está activado, usar la versión con muescas
+        const puzzleOutlinePath = fingerNotches && notchRadius > 0
+            ? generatePuzzleOutlinePathWithNotches(allCells, cellSize, cornerRadius, notchRadius)
+            : generatePuzzleOutlinePath(allCells, cellSize, cornerRadius)
 
         framePath = `  <!-- Marco/borde de la base -->\n  <g transform="translate(${paddingSize}, ${paddingSize})">\n    <path d="${outerPath} ${puzzleOutlinePath}" fill="none" stroke="${cutColor}" stroke-width="${strokeWidth}" fill-rule="evenodd" />\n  </g>\n`
     }
