@@ -361,7 +361,7 @@ function generatePuzzleOutlinePathWithNotches(
                 hasNotch = true
                 // For top edge: notch curves upward (outward), for bottom: curves downward
                 // In counter-clockwise path: top edge goes right-to-left, bottom goes left-to-right
-                notchSweep = isTopEdge ? 0 : 1
+                notchSweep = isTopEdge ? 1 : 0
             }
         } else if (isVertical) {
             // Left edge (x = minX) or Right edge (x = maxX)
@@ -374,7 +374,7 @@ function generatePuzzleOutlinePathWithNotches(
                 hasNotch = true
                 // For left edge: notch curves leftward (outward), for right: curves rightward
                 // In counter-clockwise path: left edge goes bottom-to-top, right goes top-to-bottom
-                notchSweep = isLeftEdge ? 1 : 0
+                notchSweep = isLeftEdge ? 0 : 1
             }
         }
 

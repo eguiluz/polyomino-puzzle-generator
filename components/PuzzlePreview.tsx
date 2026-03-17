@@ -235,33 +235,33 @@ export function PuzzlePreview({
         // Render semicircular notches as arcs pointing outward (into the frame)
         return (
             <g className="finger-notches">
-                {/* Top notch - semicircle pointing up */}
+                {/* Top notch - semicircle pointing up (outward) */}
                 <path
-                    d={`M ${midX - notchRadius} ${topY} A ${notchRadius} ${notchRadius} 0 0 0 ${midX + notchRadius} ${topY}`}
+                    d={`M ${midX - notchRadius} ${topY} A ${notchRadius} ${notchRadius} 0 0 1 ${midX + notchRadius} ${topY}`}
                     fill="none"
                     stroke="#666"
                     strokeWidth={strokeWidth}
                     strokeDasharray="2,2"
                 />
-                {/* Bottom notch - semicircle pointing down */}
+                {/* Bottom notch - semicircle pointing down (outward) */}
                 <path
-                    d={`M ${midX - notchRadius} ${bottomY} A ${notchRadius} ${notchRadius} 0 0 1 ${midX + notchRadius} ${bottomY}`}
+                    d={`M ${midX - notchRadius} ${bottomY} A ${notchRadius} ${notchRadius} 0 0 0 ${midX + notchRadius} ${bottomY}`}
                     fill="none"
                     stroke="#666"
                     strokeWidth={strokeWidth}
                     strokeDasharray="2,2"
                 />
-                {/* Left notch - semicircle pointing left (outward from puzzle) */}
+                {/* Left notch - semicircle pointing left (outward) */}
                 <path
-                    d={`M ${leftX} ${midY - notchRadius} A ${notchRadius} ${notchRadius} 0 0 1 ${leftX} ${midY + notchRadius}`}
+                    d={`M ${leftX} ${midY - notchRadius} A ${notchRadius} ${notchRadius} 0 0 0 ${leftX} ${midY + notchRadius}`}
                     fill="none"
                     stroke="#666"
                     strokeWidth={strokeWidth}
                     strokeDasharray="2,2"
                 />
-                {/* Right notch - semicircle pointing right (outward from puzzle) */}
+                {/* Right notch - semicircle pointing right (outward) */}
                 <path
-                    d={`M ${rightX} ${midY - notchRadius} A ${notchRadius} ${notchRadius} 0 0 0 ${rightX} ${midY + notchRadius}`}
+                    d={`M ${rightX} ${midY - notchRadius} A ${notchRadius} ${notchRadius} 0 0 1 ${rightX} ${midY + notchRadius}`}
                     fill="none"
                     stroke="#666"
                     strokeWidth={strokeWidth}
